@@ -5,7 +5,7 @@ const { Op } = require("sequelize");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const { sendEmail } = require("../utils/email-sender.js");
+const { sendEmail } = require("../utils/emailSender.js");
 
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
@@ -25,9 +25,35 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+//Loggings 
 db.loggings = require("./logging.model.js")(sequelize,Sequelize);
+
+//Tokens
 db.tokens = require("./token.model.js")(sequelize,Sequelize);
+
+//Accounts
 db.accounts = require("./account.model.js")(sequelize, Sequelize);
+
+//Suppliers
+db.suppliers = require("./supplier.model.js")(sequelize, Sequelize);
+db.supplierloggings = require("./supplierLogging.model.js")(sequelize, Sequelize);
+
+//Felicity Product
+db.felicityproducts = require("./felicityProduct.model.js")(sequelize,Sequelize);
+db.felicityproductloggings = require("./felicityProductLogging.model.js")(sequelize,Sequelize);
+
+//Felicity Price List
+db.felicitycompetitors = require("./felicityCompetitor.model.js")(sequelize, Sequelize);
+db.felicitypriceeffectivity = require("./felicityPriceEffectivity.model.js")(sequelize,Sequelize);
+db.felicitypriceeffectivityloggings = require("./felicityPriceEffectivityLogging.model.js")(sequelize,Sequelize);
+db.felicitypricelists = require("./felicityPricelist.model.js")(sequelize,Sequelize);
+
+//Suleat Products
+db.suleatproducts = require("./suleatProduct.model.js")(sequelize,Sequelize);
+db.suleatproductloggings = require("./suleatProductLogging.model.js")(sequelize,Sequelize);
+
+//Suleat Pricelist
+db.suleatpricelists = require("./suleatPricelist.model.js")(sequelize,Sequelize);
 
 const createMainSuperAdmin = async() =>{
   console.log("Checking main Superadmin account...")
@@ -73,8 +99,6 @@ const createMainSuperAdmin = async() =>{
 
   }
 }
-
-
 createMainSuperAdmin()
 module.exports = db;
 

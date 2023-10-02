@@ -4,22 +4,10 @@ const Op = db.Sequelize.Op;
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const { generateRandomPassword } = require("../utils/util");
-const { sendEmail,sendPasswordResetEmail } = require("../utils/email-sender.js");
+const { sendEmail,sendPasswordResetEmail } = require("../utils/emailSender.js");
+const { getPagination, getPagingData } = require("../utils/util");
 
 const Logging = require("../controllers/logging.controller.js");
-
-const getPagination = (page, size) => {
-  const limit = size ? +size : 3;
-  const offset = page ? page * limit : 0;
-  return { limit, offset };
-};
-
-const getPagingData = (fetchedData, page, limit) => {
-  const { count: totalItems, data } = fetchedData;
-  const currentPage = page ? +page : 0;
-  const totalPages = Math.ceil(totalItems / limit);
-  return { totalItems, data, totalPages, currentPage };
-};
 
 // Create and Save a new Superadmin
 exports.create = async (req, res) => {
@@ -96,7 +84,6 @@ exports.findAll = async (req, res) => {
   var departments = department !== 'All'?{department:{[Op.substring]:`${department}`}}:null
   var active = {active:true}
   var viewerTabs = tableTab == 'All'  ?tabsArray?{ tabs:{ [Op.or]: tabsArray.map(tab => ({ [Op.contains]: [tab] })) } }:null:{ tabs:{[Op.contains]: [tableTab] } } 
-  console.log("TAB",tableTab)
   var condition =  {
         [Op.and]: [
           email_condition,
@@ -104,10 +91,9 @@ exports.findAll = async (req, res) => {
           viewerTabs,
           users,
           departments,
-          active,
+          // active,
         ],
       }
-  console.log("CONDITIONS", condition)
   const { limit, offset } = getPagination(page, size);
   Account.findAndCountAll({ limit: limit, offset: offset, where: condition })
     .then(async (data) => {
@@ -147,7 +133,6 @@ exports.findOne = (req, res) => {
           account.createdByEmail = sup.email;
         }
         delete account.password;
-        console.log(account)
         res.send(account);
       } else {
         res.status(404).send({
@@ -201,8 +186,6 @@ exports.resetPassword = async(req, res) => {
   const id = req.params.id
   const creator_id = req.body.creator_id
   const password = generateRandomPassword();
-  console.log("ID", id)
-  console.log("CREATOR ID", creator_id)
   var hashedPassword;
   await bcrypt
     .hash(password, saltRounds)
@@ -216,9 +199,8 @@ exports.resetPassword = async(req, res) => {
     reset_password:true,
   }
   var user = await Account.findByPk(id);
-  console.log("ACCOUNT USER", user)
   Account.update(updateData, {
-    where: { id: id },
+    where: { id: id },  
   })
     .then(async(num) => {
       if (num == 1) {

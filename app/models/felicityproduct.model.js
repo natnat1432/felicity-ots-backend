@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
     const FelicityProduct = sequelize.define("felicityproduct", {
         item_code:{
             type:Sequelize.STRING,
-            allowNull:false,
+            allowNull:true,
             unique:true,
         },
         item_type:{
@@ -20,11 +20,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         item_brand:{
             type:Sequelize.STRING,
-            allowNull:false,
+            allowNull:true,
         },
         item_packaging_unit:{
             type:Sequelize.STRING,
-            allowNull:false,
+            allowNull:true,
         },
         item_quantity_per_unit:{
             type:Sequelize.DOUBLE,
@@ -46,7 +46,6 @@ module.exports = (sequelize, Sequelize) => {
                 key:"id"
             }
         }
-    
     });
 
     FelicityProduct.belongsTo(Account, {

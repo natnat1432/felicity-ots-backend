@@ -10,23 +10,30 @@ const salt = bcrypt.genSalt(10);
 const { DateTime } = require("luxon");
 
 router.post("/token", async (req, res) => {
-  const refreshToken = req.body.refreshToken;
+  const refreshToken = req.body.token;
 
   //Getting of token
   const checkToken = tokens.findOne({ where: { refreshToken: refreshToken } });
-  if (refreshToken === null)
+  if (!refreshToken)
+  {
     return res
       .status(401)
       .json({ success: false, valid: false, message: "No token included" });
-  if (checkToken === null)
+  }
+    
+  if (!checkToken)
+  {
     return res
-      .status(403)
-      .json({ success: false, valid: false, message: "Token not found" });
+    .status(403)
+    .json({ success: false, valid: false, message: "Token not found" });
+  }
+   
   if (checkToken && checkToken.active === false)
+  {
     return res
-      .status(403)
-      .json({ success: false, valid: false, message: "Token expired" });
-
+    .status(403)
+    .json({ success: false, valid: false, message: "Token expired" });
+  }
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err)
       return res
@@ -39,24 +46,24 @@ router.post("/token", async (req, res) => {
 
 router.post("/token/validate", async (req, res) => {
   const accessToken = req.body.accessToken;
-  if (accessToken === null) return res.status(401).json({ valid: false });
+  if (!accessToken){ return res.status(401).json({ valid: false })};
   jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.status(403).json({ valid: false });
     else return res.status(202).json({ valid: true });
   });
 });
+
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  if (email !== null && password !== null) {
-
-    const checkAccount = await accounts.findOne({ where: { email: email , active:true } });
-    if(checkAccount)
-    {
+  if (email && password) {
+    const checkAccount = await accounts.findOne({
+      where: { email: email, active: true },
+    });
+    if (checkAccount) {
       const validatePassword = await bcrypt.compare(
         password,
         checkAccount.password
       );
-  
       if (validatePassword) {
         const user = { name: email };
         const accessToken = generateAccessToken(user);
@@ -66,7 +73,6 @@ router.post("/login", async (req, res) => {
           active: true,
           account_id: checkAccount.id,
         };
-  
         await tokens
           .create(token)
           .then((data) => {
@@ -85,23 +91,26 @@ router.post("/login", async (req, res) => {
               userData: userData,
               token: token,
             });
+            return;
           })
           .catch((err) => {
             res.status(500).send({
               message:
                 err.message || "Some error occurred while creating the token.",
             });
+            return;
           });
       } else {
         res.status(400).json({ success: false, message: "Invalid Log in" });
+        return;
       }
-    }
-    else{
+    } else {
       res.status(400).json({ success: false, message: "Invalid Log in" });
+      return;
     }
-   
   } else {
     res.status(400).json({ success: false, message: "Incomplete fields" });
+    return;
   }
 });
 router.delete("/logout", async (req, res) => {

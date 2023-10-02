@@ -17,6 +17,7 @@ exports.createLoggingData = async (userID, description) => {
   }
 );
 };
+
 exports.createLogging = (req, res) => {
   const { creator_id, description } = req.body;
   const logging = {
